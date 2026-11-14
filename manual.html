@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>뱅셀 가계부 대시보드 매뉴얼</title>
+<style>
+:root{--yellow:#FFE81A;--purple:#BF8CFF;--mint:#7EF0A5;--orange:#FF6B45;--cream:#FBF7EF;--ink:#0A0A0A;--bw:5px;--sh:8px;--sbw:210px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--cream);color:var(--ink);font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;font-weight:800}
+button{font-family:inherit;font-weight:900;color:var(--ink);cursor:pointer}
+/* 사이드바 */
+.sb{position:fixed;left:0;top:0;bottom:0;width:var(--sbw);background:var(--cream);border-right:var(--bw) solid var(--ink);padding:12px 10px;overflow:auto;z-index:20;transition:transform .2s}
+body.sbc .sb{transform:translateX(-100%)}
+.sb .tag{display:inline-block;margin-bottom:10px}
+.gh{width:100%;display:flex;align-items:center;gap:6px;border:4px solid var(--ink);padding:6px 8px;margin-top:8px;font-size:13px;text-align:left}
+.gh.p{background:var(--purple)}.gh.m{background:var(--mint)}
+.gh.cur{box-shadow:3px 3px 0 var(--ink)}
+.gh .cnt{margin-left:auto;background:#fff;border:2px solid var(--ink);padding:0 5px;font-size:11px}
+.gl{display:none}.gl.open{display:block}
+.gi{display:block;width:100%;text-align:left;border:3px solid transparent;background:transparent;padding:5px 6px 5px 12px;margin-top:3px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gi.on{background:var(--yellow);border:var(--bw) solid var(--ink);padding:3px 4px 3px 10px}
+/* 도구줄 */
+.tools{position:fixed;right:14px;top:10px;z-index:30;display:flex;gap:8px}
+.tools button{border:var(--bw) solid var(--ink);background:var(--yellow);box-shadow:4px 4px 0 var(--ink);padding:5px 12px;font-size:15px}
+.tools button[aria-expanded=true]{box-shadow:1px 1px 0 var(--ink);transform:translate(3px,3px)}
+.tools button:disabled{opacity:.35;cursor:default}
+.tools .pg{align-self:center;font-size:14px;background:#fff;border:3px solid var(--ink);padding:4px 8px}
+/* 무대 */
+.stage{position:fixed;left:var(--sbw);right:0;top:0;bottom:0;transition:left .2s;overflow:hidden}
+body.sbc .stage{left:0}
+.canvas{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0}
+.slide{position:absolute;inset:0;display:none;overflow:hidden}
+.slide.on{display:block}
+.bg-y{background:var(--yellow)}.bg-m{background:var(--mint)}.bg-p{background:var(--purple)}.bg-o{background:var(--orange)}.bg-c{background:var(--cream)}
+.in{position:absolute;left:70px;right:70px;top:70px;bottom:92px}
+.tag{display:inline-block;background:var(--ink);color:#fff;padding:5px 14px;font-size:20px;letter-spacing:1px}
+.big{font-weight:900;line-height:1.1;color:#fff;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;text-shadow:6px 6px 0 var(--ink)}
+.h1{font-size:76px}.h2{font-size:54px;margin-top:12px}
+.box{border:var(--bw) solid var(--ink);box-shadow:var(--sh) var(--sh) 0 var(--ink);background:#fff;padding:14px 18px;font-size:22px;line-height:1.35}
+.box b{font-size:25px;display:block;margin-bottom:4px}
+.box.y{background:var(--yellow)}.box.p{background:var(--purple)}.box.m{background:var(--mint)}.box.o{background:var(--orange)}.box.c{background:var(--cream)}.box.k{background:var(--ink);color:#fff;box-shadow:none}
+.grid{display:grid;gap:22px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.num{display:inline-block;background:var(--ink);color:#fff;padding:0 12px;margin-right:8px;font-size:26px}
+.stamp{position:absolute;border:var(--bw) solid var(--ink);background:var(--orange);box-shadow:5px 5px 0 var(--ink);padding:6px 16px;font-size:22px;transform:rotate(-5deg)}
+.cast{position:absolute;right:60px;top:62px;width:260px;height:150px}
+.cast.lg{top:50%;right:50px;width:480px;height:380px;transform:translateY(-50%)}
+.cast .chr{position:absolute;width:130px;height:130px}
+.cast.lg .chr{width:200px;height:200px}
+.cast .bd{position:absolute;left:5%;top:5%;width:90%;height:90%;border-radius:50%;border:var(--bw) solid var(--ink);box-shadow:var(--sh) var(--sh) 0 var(--ink)}
+.cast svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.bb{position:absolute;background:#fff;border:var(--bw) solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:6px 12px;font-size:19px;white-space:nowrap}
+.ground{position:absolute;left:0;right:0;bottom:0;height:70px;pointer-events:none}
+.ground svg{position:absolute;bottom:-10px;width:92px;height:92px}
+.chart{display:flex;align-items:flex-end;gap:18px;height:210px;padding:0 10px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;text-align:center}
+.bar i{display:block;flex:none;width:100%;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);transform-origin:bottom}
+.bar em{font-style:normal;font-size:24px;margin-bottom:4px}
+.bar span{font-size:15px;margin-top:8px;line-height:1.15}
+.ctitle{font-size:20px;margin-bottom:8px}
+.steps{display:flex;align-items:center;justify-content:center;gap:10px}
+.dot{flex:none;width:132px;height:132px;border-radius:50%;border:var(--bw) solid var(--ink);box-shadow:5px 5px 0 var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;line-height:1.15;background:var(--yellow)}
+.arrow{font-size:40px}
+.ring{width:210px;height:210px}
+.ring text{font-weight:900}
+/* 효과: 튀어 오름 */
+.slide.on .pop{animation:pop .7s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i,0)*.12s)}
+@keyframes pop{from{transform:scale(0)}}
+.slide.on .pop-fade{animation:fade .3s both;animation-delay:calc(var(--i,0)*.12s + .5s)}
+@keyframes fade{from{opacity:0}}
+.ty span{opacity:1}
+.ty.run span{opacity:0}
+.ty.run span.v{opacity:1}
+.ty.run span.cur::after{content:"";display:inline-block;width:6px;height:.85em;background:var(--ink);margin-left:4px;vertical-align:-4px;animation:blink 1s step-end infinite}
+.ty.done span:last-child::after{content:"";display:inline-block;width:6px;height:.85em;background:var(--ink);margin-left:4px;vertical-align:-4px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.slide.on .pop,.slide.on .pop-fade{animation:none}}
+@media (max-width:900px){:root{--sbw:0px}.sb{width:210px;transform:translateX(-100%)}body.sbo .sb{transform:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="girl" viewBox="0 0 100 100" data-c="1"><path d="M22 54c-6-34 14-44 28-44s34 10 28 44z" fill="#5a3a22" stroke="#0a0a0a" stroke-width="4"/><circle cx="50" cy="56" r="26" fill="#ffe0c4" stroke="#0a0a0a" stroke-width="4"/><path d="M26 46c10-2 36-2 48 0-6-18-42-18-48 0z" fill="#5a3a22" stroke="#0a0a0a" stroke-width="3"/><circle cx="41" cy="58" r="3.5" fill="#0a0a0a"/><circle cx="59" cy="58" r="3.5" fill="#0a0a0a"/><path d="M42 69q8 8 16 0" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/><circle cx="34" cy="66" r="4" fill="#ffb3b3"/><circle cx="66" cy="66" r="4" fill="#ffb3b3"/></symbol>
+<symbol id="boy" viewBox="0 0 100 100" data-c="1"><circle cx="50" cy="56" r="27" fill="#ffe0c4" stroke="#0a0a0a" stroke-width="4"/><path d="M23 52c0-26 54-26 54 0-10-8-42-8-54 0z" fill="#2b2b2b" stroke="#0a0a0a" stroke-width="3"/><circle cx="41" cy="60" r="3.5" fill="#0a0a0a"/><circle cx="59" cy="60" r="3.5" fill="#0a0a0a"/><path d="M42 71q8 7 16 0" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="coinie" viewBox="0 0 100 100" data-c="1"><circle cx="50" cy="50" r="34" fill="#FFE81A" stroke="#0a0a0a" stroke-width="5"/><circle cx="50" cy="50" r="25" fill="none" stroke="#0a0a0a" stroke-width="2.5"/><circle cx="41" cy="46" r="3.5" fill="#0a0a0a"/><circle cx="59" cy="46" r="3.5" fill="#0a0a0a"/><path d="M41 58q9 8 18 0" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="bookie" viewBox="0 0 100 100" data-c="1"><rect x="20" y="22" width="60" height="56" rx="6" fill="#7EF0A5" stroke="#0a0a0a" stroke-width="5"/><path d="M50 22v56" stroke="#0a0a0a" stroke-width="4"/><circle cx="37" cy="46" r="3.5" fill="#0a0a0a"/><circle cx="63" cy="46" r="3.5" fill="#0a0a0a"/><path d="M38 60q12 9 24 0" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="sproutie" viewBox="0 0 100 100" data-c="1"><path d="M30 56h40l-5 28H35z" fill="#FF6B45" stroke="#0a0a0a" stroke-width="5" stroke-linejoin="round"/><path d="M50 56V36" stroke="#0a0a0a" stroke-width="5"/><path d="M50 40c-16 0-22-12-22-18 14 0 22 6 22 18zM50 40c16 0 22-12 22-18-14 0-22 6-22 18z" fill="#7EF0A5" stroke="#0a0a0a" stroke-width="4"/><circle cx="43" cy="68" r="3" fill="#0a0a0a"/><circle cx="57" cy="68" r="3" fill="#0a0a0a"/><path d="M44 75q6 4 12 0" fill="none" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/></symbol>
+<symbol id="heartie" viewBox="0 0 100 100" data-c="1"><path d="M50 82C16 58 14 30 32 24c10-3 17 3 18 10 1-7 8-13 18-10 18 6 16 34-18 58z" fill="#FF6B45" stroke="#0a0a0a" stroke-width="5" stroke-linejoin="round"/><circle cx="40" cy="46" r="3.5" fill="#0a0a0a"/><circle cx="60" cy="46" r="3.5" fill="#0a0a0a"/><path d="M42 58q8 7 16 0" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="house" viewBox="0 0 100 100" data-c="1"><path d="M12 48L50 14l38 34z" fill="#FF6B45" stroke="#0a0a0a" stroke-width="5" stroke-linejoin="round"/><rect x="22" y="48" width="56" height="38" fill="#FFE81A" stroke="#0a0a0a" stroke-width="5"/><rect x="42" y="60" width="16" height="26" fill="#BF8CFF" stroke="#0a0a0a" stroke-width="4"/></symbol>
+<symbol id="tree" viewBox="0 0 100 100" data-c="1"><rect x="44" y="56" width="12" height="30" fill="#a86b3c" stroke="#0a0a0a" stroke-width="4"/><circle cx="50" cy="40" r="26" fill="#7EF0A5" stroke="#0a0a0a" stroke-width="5"/></symbol>
+<symbol id="flower" viewBox="0 0 100 100" data-c="1"><path d="M50 86V50" stroke="#0a0a0a" stroke-width="5"/><circle cx="50" cy="36" r="14" fill="#FFE81A" stroke="#0a0a0a" stroke-width="4"/><circle cx="50" cy="36" r="6" fill="#FF6B45" stroke="#0a0a0a" stroke-width="3"/></symbol>
+<symbol id="duck" viewBox="0 0 100 100" data-c="1"><ellipse cx="46" cy="64" rx="28" ry="20" fill="#FFE81A" stroke="#0a0a0a" stroke-width="5"/><circle cx="68" cy="40" r="15" fill="#FFE81A" stroke="#0a0a0a" stroke-width="5"/><path d="M80 42l14 4-14 6z" fill="#FF6B45" stroke="#0a0a0a" stroke-width="3"/><circle cx="68" cy="37" r="2.5" fill="#0a0a0a"/></symbol>
+</defs></svg>
+
+<aside class="sb" id="sb"><span class="tag">목차</span><div id="toc"></div></aside>
+<div class="tools">
+  <button id="tg" type="button" aria-expanded="true" aria-label="사이드바 접기·열기">☰ 목록</button>
+  <button id="pv" type="button">◀</button>
+  <span class="pg" id="pg">1 / 10</span>
+  <button id="nx" type="button">▶</button>
+</div>
+
+<div class="stage" id="stage"><div class="canvas" id="cv">
+
+<!-- 1 표지 -->
+<section class="slide bg-y" data-group="도입" data-title="표지">
+  <div class="cast lg">
+    <div class="chr" style="left:20px;top:150px"><i class="bd" style="background:#CFE3FA"></i><svg><use href="#house"/></svg></div>
+    <div class="chr" style="left:160px;top:20px"><i class="bd" style="background:#FFDCDC"></i><svg><use href="#girl"/></svg></div>
+    <div class="chr" style="left:270px;top:170px"><i class="bd" style="background:#FFE29A"></i><svg><use href="#boy"/></svg></div>
+    <div class="bb" style="left:150px;top:0">처음이어도 괜찮아요!</div>
+  </div>
+  <div class="in" style="right:560px">
+    <span class="tag">사용 설명서</span>
+    <h1 class="big h1 ty" style="margin-top:26px;color:var(--purple)">뱅셀 가계부<br>대시보드<br>튜토리얼</h1>
+    <div class="box c" style="margin-top:34px">챗봇 · 핵심 요약 · RAW DATA 확인법을<br>10쪽으로 알려 드립니다.</div>
+    <div class="box k" style="margin-top:22px;display:inline-block">2026.11.14 · 총 10쪽</div>
+  </div>
+</section>
+
+<!-- 2 목차 -->
+<section class="slide bg-m" data-group="도입" data-title="매뉴얼 순서와 메뉴 구성">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#FFE29A"></i><svg><use href="#bookie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">순서</span>
+    <h2 class="big h2 ty" style="color:var(--yellow)">이 매뉴얼의 순서</h2>
+    <div class="grid g4" style="margin-top:22px">
+      <div class="box y"><span class="num">1</span><b style="display:inline">시작하기</b><br>정보 입력 · 핵심 요약</div>
+      <div class="box p"><span class="num">2</span><b style="display:inline">데이터 보기</b><br>상세 · RAW · 자산</div>
+      <div class="box o"><span class="num">3</span><b style="display:inline">챗봇 쓰기</b><br>질문 10개 · 상세 페이지</div>
+      <div class="box c"><span class="num">4</span><b style="display:inline">기준 확인</b><br>점수 · 영상 · LLM</div>
+    </div>
+    <div class="box" style="margin-top:22px;padding:12px 18px">
+      <div class="ctitle">왼쪽 메뉴 구간별 메뉴 수 (단위: 개)</div>
+      <div class="chart" style="height:190px" id="c2"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 정보 입력 -->
+<section class="slide bg-c" data-group="시작하기" data-title="정보 입력과 파일 올리기">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#FFDCDC"></i><svg><use href="#girl"/></svg></div><div class="bb" style="left:0;top:100px">여기서 시작!</div></div>
+  <div class="in">
+    <span class="tag">1단계 · 시작하기</span>
+    <h2 class="big h2 ty" style="color:var(--purple)">정보 입력 화면</h2>
+    <div class="grid g3" style="margin-top:26px">
+      <div class="box y"><b>👤 고객 정보</b>이름·성별·연령(만)·신용점수(KCB)가 화면 위에 표시됩니다.</div>
+      <div class="box p"><b>🖼️ 사진 등록</b>대표 사진과 가족 사진을 올리거나 제거할 수 있습니다.</div>
+      <div class="box m"><b>📂 RAW DATA</b>엑셀을 올리고 분석을 실행하면 모든 페이지가 같은 기준으로 갱신됩니다.</div>
+    </div>
+    <div class="box k" style="margin-top:26px">💡 금액이 부담되면 <b style="display:inline;color:var(--yellow)">숫자 가리기</b> 버튼으로 화면의 숫자를 가릴 수 있습니다. 화면의 이동 버튼으로 핵심 요약·RAW DATA·LLM 연결로 바로 갈 수 있습니다.</div>
+  </div>
+  <div class="ground" id="gr3"></div>
+</section>
+
+<!-- 4 핵심 요약 -->
+<section class="slide bg-y" data-group="시작하기" data-title="핵심 요약 읽기">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#CFE3FA"></i><svg><use href="#coinie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">1단계 · 시작하기</span>
+    <h2 class="big h2 ty" style="color:#fff">핵심 요약 읽기</h2>
+    <div class="grid g2" style="margin-top:24px">
+      <div class="box c"><span class="num">1</span><b style="display:inline">상태 한눈에</b><br>최근 1년 수입·소비·저축 상태와 종합 점수·등급을 봅니다.</div>
+      <div class="box m"><span class="num">2</span><b style="display:inline">월별 카드 클릭</b><br>해당 월의 RAW DATA 내역으로 바로 이동합니다.</div>
+      <div class="box p"><span class="num">3</span><b style="display:inline">막대·도넛 클릭</b><br>선택한 구분·분류만 걸러진 RAW DATA를 확인합니다.</div>
+      <div class="box o"><span class="num">4</span><b style="display:inline">점수 바로가기</b><br>머리글의 종합 점수 옆 버튼으로 점수 기준을 엽니다.</div>
+    </div>
+    <div class="box k" style="margin-top:24px">화면 위 기간 바에서 월을 고르면 모든 차트가 같은 기간으로 바뀝니다.</div>
+  </div>
+  <div class="stamp" style="right:90px;bottom:100px">핵심!</div>
+</section>
+
+<!-- 5 상세 드릴다운 -->
+<section class="slide bg-p" data-group="데이터 보기" data-title="수입·지출·이체 상세">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#FFE29A"></i><svg><use href="#coinie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">2단계 · 데이터 보기</span>
+    <h2 class="big h2 ty" style="color:var(--yellow)">수입·지출·이체 상세</h2>
+    <div class="box" style="margin-top:22px">
+      <div class="ctitle">드릴다운 순서</div>
+      <div class="steps" id="st5"></div>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="box y"><b>🧾 항목을 눌러 내려가기</b>대분류 → 소분류 → 내용 순서로 좁혀 봅니다.</div>
+      <div class="box m"><b>≡ 분류 기준표</b>타입·대분류·소분류별 금액을 선택 기간과 소유자 기준으로 확인합니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 RAW DATA -->
+<section class="slide bg-c" data-group="데이터 보기" data-title="기간 선택과 RAW DATA">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#CFE3FA"></i><svg><use href="#bookie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">2단계 · 데이터 보기</span>
+    <h2 class="big h2 ty" style="color:var(--orange)">RAW DATA 확인하기</h2>
+    <div class="grid g2" style="margin-top:24px">
+      <div class="box y"><span class="num">1</span><b style="display:inline">기간 선택</b><br>상단 기간 바에서 한 달 또는 여러 달을 고릅니다. RAW DATA는 전체 기간이 기본입니다.</div>
+      <div class="box p"><span class="num">2</span><b style="display:inline">열 필터·정렬</b><br>열 머리글로 거르고 정렬하며 페이지를 넘겨 모든 시트와 행을 봅니다.</div>
+      <div class="box m"><span class="num">3</span><b style="display:inline">수정 후 재분석</b><br>값을 고친 뒤 저장하면 다시 분석하고, 초기화하면 편집 전 상태로 돌아갑니다.</div>
+      <div class="box o"><span class="num">4</span><b style="display:inline">차트에서 이동</b><br>핵심 요약의 월·막대·도넛을 누르면 같은 조건이 걸린 채 열립니다.</div>
+    </div>
+    <div class="box k" style="margin-top:24px">거래 한 건까지 확인할 때 가장 정확한 곳은 RAW DATA입니다.</div>
+  </div>
+  <div class="ground" id="gr6"></div>
+</section>
+
+<!-- 7 자산·계산기 -->
+<section class="slide bg-m" data-group="데이터 보기" data-title="자산·주식·대출과 계산기">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#FFDCDC"></i><svg><use href="#heartie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">2단계 · 데이터 보기</span>
+    <h2 class="big h2 ty" style="color:var(--purple)">자산·주식·대출</h2>
+    <div class="grid g3" style="margin-top:24px">
+      <div class="box y"><b>💼 자산_뱅셀</b>올린 자산 RAW DATA를 앱 화면처럼 요약합니다.</div>
+      <div class="box p"><b>🏦 자산 현황</b>자산·부채·순자산과 주식·대출 구성을 봅니다.</div>
+      <div class="box o"><b>↗ 주식 및 대출</b>주식·대출·보험 현황을 3단으로 비교합니다.</div>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="box c"><b>∑ 투자 계산기</b>월 적립식 주식 3개 시나리오를 복리로 비교합니다.</div>
+      <div class="box c"><b>% 대출 계산기</b>소득·담보가치·대출잔액으로 DSR·LTV를 계산합니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 챗봇 -->
+<section class="slide bg-o" data-group="챗봇·기준" data-title="챗봇 사용법">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#CFE3FA"></i><svg><use href="#girl"/></svg></div><div class="bb" style="left:0;top:96px">궁금하면 눌러요</div></div>
+  <div class="in">
+    <span class="tag">3단계 · 챗봇</span>
+    <h2 class="big h2 ty" style="color:var(--yellow)">챗봇 사용법</h2>
+    <div class="grid g2" style="margin-top:24px">
+      <div class="box y"><span class="num">1</span><b style="display:inline">자주 하는 질문 10개</b><br>왼쪽 아래 <b style="display:inline">챗봇</b> 버튼을 열고 질문을 누르면 바로 답합니다.</div>
+      <div class="box p"><span class="num">2</span><b style="display:inline">&lt;상세 페이지&gt; 버튼</b><br>답변 아래 버튼을 누르면 해당 내용이 있는 화면으로 이동합니다.</div>
+      <div class="box m"><span class="num">3</span><b style="display:inline">이동·크기 조절</b><br>제목줄을 끌어 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다.</div>
+      <div class="box c"><span class="num">4</span><b style="display:inline">직접 질문</b><br>LLM 연결을 저장하면 입력창으로 자유롭게 물을 수 있습니다.</div>
+    </div>
+    <div class="box k" style="margin-top:24px">질문 10개는 연결 없이도 바로 쓸 수 있고, 직접 질문만 LLM 연결이 필요합니다.</div>
+  </div>
+</section>
+
+<!-- 9 기준 -->
+<section class="slide bg-y" data-group="챗봇·기준" data-title="점수·영상·LLM 기준">
+  <div class="cast"><div class="chr" style="left:120px;top:0"><i class="bd" style="background:#FFDCDC"></i><svg><use href="#sproutie"/></svg></div></div>
+  <div class="in">
+    <span class="tag">4단계 · 기준 확인</span>
+    <h2 class="big h2 ty" style="color:var(--purple)">점수·영상·LLM</h2>
+    <div class="grid" style="grid-template-columns:260px 1fr;margin-top:22px">
+      <div class="box c" style="text-align:center;padding:10px">
+        <div class="ctitle">종합 점수 총 배점</div>
+        <svg class="ring" viewBox="0 0 120 120"><circle class="pop" style="--i:0;transform-box:fill-box;transform-origin:center" cx="60" cy="60" r="46" fill="var(--mint)" stroke="#0a0a0a" stroke-width="5"/><text class="pop-fade" style="--i:1" x="60" y="68" text-anchor="middle" font-size="26" fill="#0a0a0a">100점</text></svg>
+        <div style="font-size:16px">6개 항목 합산</div>
+      </div>
+      <div class="grid" style="gap:16px">
+        <div class="box p"><b>🎯 점수 기준</b>항목별 점수, 종합 점수 게이지, 등급 구간과 개선 목표를 확인합니다.</div>
+        <div class="box m"><b>▶ 영상 기준</b>분석 기준에 반영한 재테크 영상 원본을 볼 수 있습니다.</div>
+        <div class="box o"><b>AI LLM 연결</b>모델·URL·API_KEY를 저장하고 연결 테스트를 실행합니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 마무리 -->
+<section class="slide bg-p" data-group="마무리" data-title="마무리">
+  <div class="cast lg">
+    <div class="chr" style="left:10px;top:150px"><i class="bd" style="background:#7EF0A5"></i><svg><use href="#sproutie"/></svg></div>
+    <div class="chr" style="left:150px;top:20px"><i class="bd" style="background:#FFE29A"></i><svg><use href="#heartie"/></svg></div>
+    <div class="chr" style="left:270px;top:170px"><i class="bd" style="background:#CFE3FA"></i><svg><use href="#coinie"/></svg></div>
+    <div class="bb" style="left:140px;top:0">수고하셨어요!</div>
+  </div>
+  <div class="in" style="right:560px">
+    <span class="tag">마무리</span>
+    <h2 class="big h1 ty" style="margin-top:22px;color:var(--yellow);font-size:68px">이제 직접<br>열어 보세요</h2>
+    <div class="box y" style="margin-top:30px"><b>🧭 기억할 길</b>정보 입력 → 핵심 요약 → 상세·RAW DATA</div>
+    <div class="box c" style="margin-top:20px"><b>💬 막히면</b>왼쪽 아래 챗봇의 질문 10개를 눌러 보세요.</div>
+  </div>
+  <div class="ground" id="gr10"></div>
+</section>
+
+</div></div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide')),N=slides.length,cur=0;
+  var cv=document.getElementById('cv'),stage=document.getElementById('stage');
+  var toc=document.getElementById('toc'),pg=document.getElementById('pg'),pv=document.getElementById('pv'),nx=document.getElementById('nx'),tg=document.getElementById('tg');
+  var colors=['var(--yellow)','var(--purple)','var(--mint)','var(--orange)','var(--cream)'];
+  var gname={};
+  /* 땅 장식 */
+  var order=['tree','flower','duck','flower','tree','duck'];
+  ['gr3','gr6','gr10'].forEach(function(id,k){var g=document.getElementById(id);if(!g)return;var h='';for(var i=0;i<6;i++){h+='<svg style="left:'+(i*17+2)+'%"><use href="#'+order[(i+k*2)%6]+'"/></svg>';}g.innerHTML=h;});
+  /* 차트 2: 메뉴 수 */
+  var menu=[['시작',1,'var(--yellow)'],['월별 가계부',7,'var(--purple)'],['자산·주식',3,'var(--mint)'],['도구',2,'var(--orange)'],['자료',4,'var(--cream)']];
+  var c2='';menu.forEach(function(m,i){c2+='<div class="bar"><em class="pop-fade" style="--i:'+i+'">'+m[1]+'</em><i class="pop" style="--i:'+i+';height:'+(m[1]*16)+'px;background:'+m[2]+'"></i><span>'+m[0]+'</span></div>';});
+  document.getElementById('c2').innerHTML=c2;
+  /* 차트 5: 단계 */
+  var st=[['대분류','var(--yellow)'],['소분류','var(--mint)'],['내용','var(--orange)'],['RAW 거래','var(--purple)']],s5='';
+  st.forEach(function(s,i){s5+=(i?'<span class="arrow pop-fade" style="--i:'+i+'">▶</span>':'')+'<div class="dot pop" style="--i:'+i+';background:'+s[1]+'">'+s[0]+'</div>';});
+  document.getElementById('st5').innerHTML=s5;
+  /* 목차 */
+  var groups=[];slides.forEach(function(s,i){var g=s.dataset.group;if(!groups.length||groups[groups.length-1].name!==g)groups.push({name:g,items:[]});groups[groups.length-1].items.push(i);});
+  var gEls=[];
+  groups.forEach(function(g,gi){
+    var hb=document.createElement('button');hb.type='button';hb.className='gh '+(gi%2?'m':'p');hb.setAttribute('aria-expanded','false');
+    hb.innerHTML='<span class="ar">▸</span><span>'+g.name+'</span><span class="cnt">'+g.items.length+'쪽</span>';
+    var list=document.createElement('div');list.className='gl';
+    g.items.forEach(function(i){var b=document.createElement('button');b.type='button';b.className='gi';b.textContent=(i+1)+'. '+slides[i].dataset.title;b.onclick=function(){go(i)};list.appendChild(b);g.btn=g.btn||{};});
+    hb.onclick=function(){var o=!list.classList.contains('open');list.classList.toggle('open',o);hb.setAttribute('aria-expanded',o);hb.querySelector('.ar').textContent=o?'▾':'▸'};
+    toc.appendChild(hb);toc.appendChild(list);gEls.push({h:hb,l:list,g:g});
+  });
+  /* 타자기 */
+  var timer=null;
+  function type(slide){
+    clearInterval(timer);
+    var t=slide.querySelector('.big.ty');if(!t)return;
+    if(!t.dataset.html)t.dataset.html=t.innerHTML;
+    var tmp=document.createElement('div');tmp.innerHTML=t.dataset.html;
+    var out='';(function walk(n){n.childNodes.forEach(function(c){if(c.nodeType===3){c.textContent.split('').forEach(function(ch){out+='<span>'+ch+'</span>'})}else if(c.nodeName==='BR'){out+='<br>'}else walk(c)})})(tmp);
+    t.innerHTML=out;t.classList.remove('done');t.classList.add('run');
+    var sp=[].slice.call(t.querySelectorAll('span')),k=0;
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches){sp.forEach(function(s){s.className='v'});t.classList.remove('run');t.classList.add('done');return}
+    timer=setInterval(function(){
+      if(k>0)sp[k-1].classList.remove('cur');
+      if(k>=sp.length){clearInterval(timer);t.classList.remove('run');t.classList.add('done');return}
+      sp[k].classList.add('v','cur');k++;
+    },60);
+  }
+  function go(i,noHash){
+    i=Math.max(0,Math.min(N-1,i));cur=i;
+    slides.forEach(function(s,k){s.classList.toggle('on',k===i)});
+    pg.textContent=(i+1)+' / '+N;pv.disabled=i===0;nx.disabled=i===N-1;
+    gEls.forEach(function(e){
+      var has=e.g.items.indexOf(i)>=0;
+      e.h.classList.toggle('cur',has);
+      if(has){e.l.classList.add('open');e.h.setAttribute('aria-expanded','true');e.h.querySelector('.ar').textContent='▾'}
+      [].forEach.call(e.l.children,function(b,bi){var on=e.g.items[bi]===i;b.classList.toggle('on',on);if(on)try{b.scrollIntoView({block:'nearest'})}catch(x){}});
+    });
+    type(slides[i]);
+    if(!noHash){try{history.replaceState(null,'','#'+(i+1))}catch(e){}}
+  }
+  pv.onclick=function(){go(cur-1)};nx.onclick=function(){go(cur+1)};
+  tg.onclick=function(){var small=innerWidth<=900;var c;if(small){c=!document.body.classList.toggle('sbo');tg.setAttribute('aria-expanded',!c)}else{c=document.body.classList.toggle('sbc');tg.setAttribute('aria-expanded',!c)}fit()};
+  addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft')go(cur-1);else if(e.key==='ArrowRight')go(cur+1);else if((e.key==='s'||e.key==='S')&&!e.ctrlKey&&!e.metaKey)tg.click();
+  });
+  function fit(){
+    var w=stage.clientWidth,h=stage.clientHeight,s=Math.min(w/1280,h/720);
+    cv.style.transform='scale('+s+')';cv.style.left=((w-1280*s)/2)+'px';cv.style.top=((h-720*s)/2)+'px';
+  }
+  addEventListener('resize',fit);
+  function hash(){var m=/^#(\d+)/.exec(location.hash);return m?parseInt(m[1],10)-1:0}
+  addEventListener('hashchange',function(){go(hash(),true)});
+  if(innerWidth<=900){document.body.classList.add('sbc');tg.setAttribute('aria-expanded','false')}
+  fit();go(hash(),true);
+})();
+</script>
+</body>
+</html>

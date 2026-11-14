@@ -4001,6 +4001,27 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     }
 
   </style>
+<style id="faq-chatbot-style">
+.manual-view{grid-template-rows:minmax(0,1fr)}
+.manual-view iframe{width:100%;height:100%;border:0;border-radius:18px;background:#FBF7EF;box-shadow:0 0 0 1px var(--line)}
+#chatbotToggle{z-index:2147483000}
+#chatbotPanel{--chat-text-size:14px;--chat-line-height:1.5;position:fixed;z-index:2147482999;left:18px;top:auto;bottom:70px;width:380px;height:540px;min-width:280px;min-height:340px;max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);border-radius:18px}
+#chatbotPanel .chatbot-head{cursor:move;touch-action:none;user-select:none;gap:6px;font-size:14px}
+#chatbotPanel .chatbot-head .faq-open{margin-left:auto;border:0;border-radius:10px;background:#fff;color:var(--pink);font-size:12px;font-weight:700;padding:4px 8px;cursor:pointer}
+#chatbotPanel .chatbot-close{flex:0 0 auto}
+#chatbotPanel .chatbot-messages{font-family:"Pretendard",sans-serif}
+#chatbotPanel .chatbot-form textarea{height:54px}
+#chatbotPanel .chatbot-resize{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;touch-action:none;z-index:2;background:linear-gradient(135deg,transparent 50%,var(--pink) 50%,var(--pink) 58%,transparent 58%,transparent 70%,var(--pink) 70%,var(--pink) 78%,transparent 78%);border-bottom-right-radius:18px}
+.faq-list{display:grid;gap:6px;align-self:stretch}
+.faq-list .faq-title{font-size:13px;font-weight:700;color:#334155}
+.faq-q{border:1px solid var(--line);border-radius:12px;background:#fff;color:#334155;padding:7px 10px;font-size:13px;line-height:1.35;text-align:left;cursor:pointer;font-family:inherit}
+.faq-q:hover{background:var(--soft-blue);color:var(--blue)}
+.chat-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chat-actions button{border:0;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.chat-actions .detail{background:var(--pink);color:#fff}
+.chat-actions .manual{background:var(--soft-blue);color:var(--blue)}
+.chat-message.assistant.rich{white-space:normal}
+</style>
 </head>
 <body>
   <div class="dashboard-viewport" id="dashboardViewport">
@@ -4038,6 +4059,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <button class="nav-item" type="button" data-view="llm"><i data-lucide="plug-zap" data-symbol="AI"></i><span class="nav-label">LLM 연결</span></button>
           <button class="nav-item" type="button" data-view="videos"><i data-lucide="play-square" data-symbol="▶"></i><span class="nav-label">영상 기준</span></button>
           <button class="nav-item" type="button" data-view="score"><i data-lucide="target" data-symbol="◎"></i><span class="nav-label">점수 기준</span></button>
+          <button class="nav-item" type="button" data-view="manual"><i data-lucide="book-open" data-symbol="📖"></i><span class="nav-label">매뉴얼</span></button>
         </div>
       </nav>
       <figure class="sidebar-mascot" aria-label="사이드바 이미지">
@@ -4622,6 +4644,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             </article>
           </div>
         </div>
+      </section>
+      <section class="view manual-view" id="view-manual">
+        <iframe id="manualFrame" title="뱅셀 가계부 대시보드 매뉴얼" src="manual.html"></iframe>
       </section>
     </main>
     <button class="chatbot-fab" id="chatbotToggle" type="button">챗봇</button>
@@ -16140,6 +16165,147 @@ Chart.defaults.font.family = '"Pretendard", "Apple SD Gothic Neo", Arial, sans-s
       refitDashboardToViewport();
     });
   </script>
+
+<script id="faq-chatbot-script">
+(function () {
+  /* 매뉴얼 메뉴 문구 등록 */
+  try { viewCopy.manual = ['매뉴얼', '챗봇과 주요 화면, 데이터 확인 방법을 10쪽으로 안내합니다.']; } catch (e) {}
+  var FAQS = [
+    { q: '처음에 어디서부터 시작하나요?', view: 'personal', page: 3, kw: ['처음', '시작'],
+      a: '정보 입력 화면에서 고객 정보와 사진을 확인하고 RAW DATA 엑셀을 올려 분석을 실행하세요. 분석이 끝나면 모든 페이지가 같은 기준으로 갱신됩니다. 그다음 핵심 요약부터 보시면 됩니다.' },
+    { q: 'RAW DATA 엑셀은 어떻게 올리나요?', view: 'personal', page: 3, kw: ['업로드', '엑셀 올', '파일 올', '올리'],
+      a: '정보 입력 화면에서 엑셀 파일을 선택하고 분석 버튼을 누르면 됩니다. 올린 뒤에는 기간 선택, 수입, 지출, 이체, 자산 분석이 모두 같은 데이터로 연결됩니다.' },
+    { q: '핵심 요약에서는 무엇을 보나요?', view: 'overview', page: 4, kw: ['핵심', '요약'],
+      a: '최근 1년의 수입, 소비, 저축 상태를 한 화면에서 봅니다. 월별 카드나 막대, 도넛을 누르면 해당 조건이 걸린 RAW DATA로 이동합니다.' },
+    { q: '지출을 대분류·소분류로 나눠 보려면?', view: 'expense-detail', page: 5, kw: ['지출', '대분류', '소분류', '드릴'],
+      a: '지출 상세에서 대분류를 누르면 소분류, 내용 순서로 내려가며 확인할 수 있습니다. 수입 상세와 이체 상세도 같은 방식입니다.' },
+    { q: '특정 월의 거래 내역은 어디서 보나요?', view: 'raw', page: 6, kw: ['거래', '내역', '월별', 'raw'],
+      a: 'RAW DATA 화면에서 열 필터와 정렬로 원하는 거래를 찾습니다. 핵심 요약의 월별 카드를 누르면 그 월이 필터된 상태로 열립니다.' },
+    { q: '분류 기준은 어디서 확인하나요?', view: 'classification-guide', page: 5, kw: ['분류', '기준표'],
+      a: '분류 기준표에서 타입, 대분류, 소분류별 금액을 선택한 기간과 소유자 기준으로 확인할 수 있습니다.' },
+    { q: '자산·부채·순자산은 어디서 보나요?', view: 'assets', page: 7, kw: ['자산', '부채', '순자산'],
+      a: '자산 현황에서 자산, 부채, 순자산과 주식·대출 구성을 봅니다. 앱 화면처럼 보려면 자산_뱅셀을 열어 보세요.' },
+    { q: '대출 DSR·LTV는 어떻게 계산하나요?', view: 'loan', page: 7, kw: ['대출', 'dsr', 'ltv'],
+      a: '대출 계산기에 소득, 담보가치, 대출잔액을 입력하면 DSR과 LTV로 대출 부담을 계산합니다.' },
+    { q: '종합 점수와 등급은 어떻게 정해지나요?', view: 'score', page: 9, kw: ['점수', '등급'],
+      a: '점수 기준 화면에서 6개 항목 합산 100점 기준의 계산 방식, 등급 구간, 현재 점수 해석과 다음 개선 목표를 볼 수 있습니다.' },
+    { q: '챗봇에 직접 질문하려면 어떻게 하나요?', view: 'llm', page: 8, kw: ['llm', 'ai', '직접', 'api'],
+      a: 'LLM 연결 화면에서 모델, URL, API_KEY를 저장하고 연결 테스트를 한 뒤 입력창에 질문하세요. 위의 질문 10개는 연결 없이도 바로 답합니다.' }
+  ];
+  var panel = document.getElementById('chatbotPanel');
+  var fab = document.getElementById('chatbotToggle');
+  var box = document.getElementById('chatbotMessages');
+  var form = document.getElementById('chatbotForm');
+  if (!panel || !box) return;
+  /* 화면 확대 비율(zoom)을 받지 않도록 body 로 이동 */
+  document.body.appendChild(fab);
+  document.body.appendChild(panel);
+
+  function goView(view, page) {
+    if (typeof setView === 'function') setView(view);
+    if (view === 'manual') {
+      var fr = document.getElementById('manualFrame');
+      if (fr) {
+        var url = 'manual.html#' + (page || 1);
+        try {
+          if (fr.contentWindow && fr.contentWindow.location.href.indexOf('manual.html') >= 0) fr.contentWindow.location.hash = String(page || 1);
+          else fr.src = url;
+        } catch (e) { fr.src = url; }
+      }
+    }
+  }
+  function scrollEnd() { box.scrollTop = box.scrollHeight; }
+  function addUser(text) {
+    var m = document.createElement('div'); m.className = 'chat-message user'; m.textContent = text; box.appendChild(m);
+  }
+  function addAnswer(f) {
+    var m = document.createElement('div'); m.className = 'chat-message assistant rich';
+    var t = document.createElement('div'); t.textContent = f.a; m.appendChild(t);
+    var row = document.createElement('div'); row.className = 'chat-actions';
+    var d = document.createElement('button'); d.type = 'button'; d.className = 'detail'; d.textContent = '<상세 페이지>';
+    d.addEventListener('click', function () { goView(f.view); });
+    var mn = document.createElement('button'); mn.type = 'button'; mn.className = 'manual'; mn.textContent = '매뉴얼 ' + f.page + '쪽';
+    mn.addEventListener('click', function () { goView('manual', f.page); });
+    row.appendChild(d); row.appendChild(mn); m.appendChild(row); box.appendChild(m);
+  }
+  function ask(f) { addUser(f.q); addAnswer(f); scrollEnd(); }
+  function addFaqList() {
+    var m = document.createElement('div'); m.className = 'chat-message assistant rich faq-list';
+    var t = document.createElement('div'); t.className = 'faq-title'; t.textContent = '자주 하는 질문 10개';
+    m.appendChild(t);
+    FAQS.forEach(function (f, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'faq-q'; b.textContent = (i + 1) + '. ' + f.q;
+      b.addEventListener('click', function () { ask(f); });
+      m.appendChild(b);
+    });
+    box.appendChild(m); scrollEnd();
+  }
+  /* 첫 안내 문구를 FAQ 목록으로 교체 */
+  box.innerHTML = '';
+  var hello = document.createElement('div'); hello.className = 'chat-message assistant';
+  hello.textContent = '궁금한 질문을 눌러 보세요. 답변 아래 <상세 페이지> 버튼을 누르면 해당 화면으로 이동합니다.';
+  box.appendChild(hello); addFaqList();
+  /* 머리글: 질문 10개 다시 보기 버튼 */
+  var head = panel.querySelector('.chatbot-head');
+  var faqBtn = document.createElement('button'); faqBtn.type = 'button'; faqBtn.className = 'faq-open'; faqBtn.textContent = '질문 10개';
+  faqBtn.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+  faqBtn.addEventListener('click', addFaqList);
+  var closeBtn = head.querySelector('.chatbot-close');
+  head.insertBefore(faqBtn, closeBtn);
+  closeBtn.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+  /* 직접 입력: 질문 10개와 겹치면 바로 답변 */
+  form.addEventListener('submit', function (e) {
+    var input = document.getElementById('chatbotInput');
+    var text = (input.value || '').trim().toLowerCase();
+    if (!text) return;
+    var hit = FAQS.filter(function (f) { return f.kw.some(function (k) { return text.indexOf(k) >= 0; }); });
+    if (hit.length === 1 || (hit.length > 1 && text.length < 14)) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      var f = hit[0]; var original = input.value.trim(); input.value = '';
+      ask({ q: original, a: f.a, view: f.view, page: f.page });
+    }
+  }, true);
+  /* 이동 */
+  function clampPanel() {
+    var r = panel.getBoundingClientRect();
+    var w = Math.min(r.width, innerWidth - 8), h = Math.min(r.height, innerHeight - 8);
+    panel.style.width = w + 'px'; panel.style.height = h + 'px';
+    var l = Math.min(Math.max(0, r.left), innerWidth - w), t = Math.min(Math.max(0, r.top), innerHeight - h);
+    panel.style.left = l + 'px'; panel.style.top = t + 'px'; panel.style.bottom = 'auto';
+  }
+  head.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0) return;
+    var r = panel.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px'; panel.style.bottom = 'auto';
+    head.setPointerCapture(e.pointerId);
+    function mv(ev) {
+      var l = Math.min(Math.max(0, ev.clientX - dx), innerWidth - r.width);
+      var t = Math.min(Math.max(0, ev.clientY - dy), innerHeight - 42);
+      panel.style.left = l + 'px'; panel.style.top = t + 'px';
+    }
+    function up() { head.removeEventListener('pointermove', mv); head.removeEventListener('pointerup', up); head.removeEventListener('pointercancel', up); }
+    head.addEventListener('pointermove', mv); head.addEventListener('pointerup', up); head.addEventListener('pointercancel', up);
+  });
+  /* 크기 조절 */
+  var grip = document.createElement('div'); grip.className = 'chatbot-resize'; grip.title = '끌어서 크기 조절';
+  panel.appendChild(grip);
+  grip.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    var r = panel.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
+    panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px'; panel.style.bottom = 'auto';
+    grip.setPointerCapture(e.pointerId);
+    function mv(ev) {
+      var w = Math.max(280, Math.min(innerWidth - r.left - 2, r.width + ev.clientX - sx));
+      var h = Math.max(340, Math.min(innerHeight - r.top - 2, r.height + ev.clientY - sy));
+      panel.style.width = w + 'px'; panel.style.height = h + 'px';
+    }
+    function up() { grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up); }
+    grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+  });
+  addEventListener('resize', function () { if (!panel.hidden && panel.style.top) clampPanel(); });
+  window.__faqChatbot = { faqs: FAQS, goView: goView };
+})();
+</script>
 
 </body>
 </html>
