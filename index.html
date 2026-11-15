@@ -10207,7 +10207,7 @@ function selectedTransactionMonthKeys(data = dashboardData) {
         hourLabels: Array.from({ length: 24 }, (_, hour) => `${hour}시`),
         hourlySpend,
         monthKeys,
-        monthLabels: monthKeys.map((month) => month.replace('2025-', '25.').replace('2026-', '26.')),
+        monthLabels: monthKeys.map((month) => month.replace(/^20(\d{2})-/, '$1.')),
         income,
         spend,
         categoryItems,
@@ -14595,7 +14595,7 @@ renderCategoryProductDonut('financialTopAssets', /투자/, '자산 항목별 상
       return {
         summary: summaryPayload,
         months,
-        monthLabels: months.map((m) => m.replace('2025-', '25.').replace('2026-', '26.')),
+        monthLabels: months.map((m) => m.replace(/^20(\d{2})-/, '$1.')),
         income,
         spend,
         balance,
