@@ -4655,7 +4655,7 @@ body .sidebar #chatbotToggle .cb-ic{font-size:16px;line-height:1}
         <iframe id="manualFrame" title="뱅셀 가계부 대시보드 매뉴얼" src="manual.html"></iframe>
       </section>
     </main>
-    <button class="chatbot-fab" id="chatbotToggle" type="button">챗봇</button>
+    <button class="chatbot-fab" id="chatbotToggle" type="button">챗봇</button><button id="modeBtn" type="button" data-target="sample.html" title="클릭하면 샘플 데이터 화면으로 전환합니다"><span>🔀 샘플/리얼</span><small>현재: 리얼</small></button>
   <section class="chatbot-panel" id="chatbotPanel" hidden>
     <div class="chatbot-head">
       <span>AI 가계부 코치</span>
@@ -16362,7 +16362,7 @@ html body #personalHeaderHost .topline.personal-info-panel{height:auto!important
 html body #personalHeaderHost #overviewHeaderCharacter,html body #personalHeaderHost #overviewFamilyPhoto{display:none!important}
 html body #personalHeaderHost #viewSubtitle{display:none!important}
 </style>
-</body>
+<style id="mode-btn-css">#modeBtn{position:fixed;left:18px;bottom:18px;z-index:30;width:74px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid #833ab4;border-radius:14px;background:#fff;color:#833ab4;font:800 11px/1.15 Pretendard,"Malgun Gothic",sans-serif;cursor:pointer;padding:2px}.sidebar .chat #modeBtn{position:static;width:100%;height:44px;margin-top:8px;border-radius:16px;font-size:12px}#modeBtn small{font-size:9.5px;font-weight:700;color:#7a8399}#modeBtn:hover{background:#f6effb}</style><script>document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#modeBtn');if(b)location.href=b.dataset.target});(function(){function place(){var f=document.getElementById('chatbotToggle'),m=document.getElementById('modeBtn');if(f&&m&&f.nextElementSibling!==m)f.insertAdjacentElement('afterend',m)}place();window.addEventListener('load',place);var n=0,t=setInterval(function(){place();if(++n>40)clearInterval(t)},250)})();</script></body>
 </html>
 
 
